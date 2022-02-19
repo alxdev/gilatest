@@ -71,6 +71,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         }
 
         // Load more plugins here
+        $this->addPlugin('ADmad/JwtAuth');
     }
 
     /**
@@ -81,6 +82,10 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
      */
     public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
+        $csrf = new CsrfProtectionMiddleware([
+            'httponly' => true,
+        ]);
+      
         $middlewareQueue
             // Catch any exceptions in the lower layers,
             // and make an error page/response
@@ -106,13 +111,25 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 
             // Cross Site Request Forgery (CSRF) Protection Middleware
             // https://book.cakephp.org/4/en/controllers/middleware.html#cross-site-request-forgery-csrf-middleware
-            ->add(new CsrfProtectionMiddleware([
-                'httponly' => true,
-            ]))
+            //->add(new CsrfProtectionMiddleware([
+            //    'httponly' => true,
+            //]))
             
             ->add(new RoutingMiddleware($this))
             // add Authentication after RoutingMiddleware
             ->add(new AuthenticationMiddleware($this));
+            
+            // Token check will be skipped when callback returns `true`.
+            $csrf->skipCheckCallback(function ($request) {
+                // Skip token check for API URLs.
+                if ($request->getParam('prefix') === 'api') {
+                    return true;
+                }
+            });
+
+            // Cross Site Request Forgery (CSRF) Protection Middleware
+            // https://book.cakephp.org/4/en/controllers/middleware.html#cross-site-request-forgery-csrf-middleware
+            $middlewareQueue->add($csrf);
 
         return $middlewareQueue;
     }

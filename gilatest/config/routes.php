@@ -72,6 +72,27 @@ return static function (RouteBuilder $routes) {
          */
         $builder->fallbacks();
     });
+    
+    $routes->scope('/api', function (RouteBuilder $builder) {
+         // No $builder->applyMiddleware() here.
+    
+         // Parse specified extensions from URLs
+         $builder->setExtensions(['json', 'xml']);
+         
+         $builder->connect('/api/getVehicles', ['controller' => 'Vehicles', 'action' => 'getVehicles']);
+         
+         $builder->connect('/login', ['controller' => 'Api', 'action' => 'login', 'prefix' => 'api']);
+         $builder->connect('/register', ['controller' => 'Api', 'action' => 'register', 'prefix' => 'api']);
+         $builder->connect('/list', ['controller' => 'Api', 'action' => 'index', 'prefix' => 'api']);
+         // $builder->connect('/user/:id', ['controller' => 'Api', 'action' => 'view', 'prefix' => 'api', 'id' => null], ['pass' => ['id']]);
+         $builder->connect('/user/{id}', ['controller' => 'Api', 'action' => 'view', 'prefix' => 'api'])->setPass(['id'])->setPatterns(['id' => '[0-9]+']);;
+         $builder->connect('/user/edit/{id}', ['controller' => 'Api', 'action' => 'edit', 'prefix' => 'api'])->setPass(['id'])->setPatterns(['id' => '[0-9]+']);;
+         $builder->connect('/user/delete/{id}', ['controller' => 'Api', 'action' => 'delete', 'prefix' => 'api'])->setPass(['id'])->setPatterns(['id' => '[0-9]+']);;
+
+         $builder->fallbacks();
+    
+         // Connect API actions here.
+    });
 
     /*
      * If you need a different set of middleware or none at all,
